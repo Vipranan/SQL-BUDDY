@@ -1,0 +1,34 @@
+from sqlalchemy import create_engine, inspect
+
+DATABASE_URL = "postgresql+psycopg2://nancypravin@localhost/sql_buddy_db"
+
+engine = create_engine(DATABASE_URL)
+inspector = inspect(engine)
+
+schema = {}
+
+for table_name in inspector.get_table_names():
+    columns = inspector.get_columns(table_name)
+    primary_keys = inspector.get_pk_constraint(table_name).get("constrained_columns", [])
+    foreign_keys = inspector.get_foreign_keys(table_name)
+
+    schema[table_name] = {
+        "columns": [
+            {
+                "name": col["name"],
+                "type": str(col["type"])
+            }
+            for col in columns
+        ],
+        "primary_key": primary_keys,
+        "foreign_keys": [
+            {
+                "column": fk["constrained_columns"],
+                "ref_table": fk["referred_table"],
+                "ref_column": fk["referred_columns"]
+            }
+            for fk in foreign_keys
+        ]
+    }
+
+print(schema)

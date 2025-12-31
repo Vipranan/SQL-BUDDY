@@ -1,0 +1,37 @@
+{
+  "active": "people",
+  "databases": {
+    "postgres_local": {
+      "type": "postgres",
+      "url": "postgresql+psycopg2://nancypravin@localhost/sql_buddy_db"
+    },
+    "chinook_sqlite": {
+      "type": "sqlite",
+      "url": "sqlite:///chinook.db"
+    },
+    "chinook_copy": {
+      "type": "sqlite",
+      "url": "sqlite:///chinook.db"
+    },
+    "pg_test": {
+      "type": "postgres",
+      "url": "postgresql+psycopg2://nancypravin@localhost/sql_buddy_db"
+    },
+    "chinook": {
+      "type": "sqlite",
+      "url": "sqlite:////Users/nancypravin/kact/SQL-BUDDY/chinook.db"
+    },
+    "world": {
+      "type": "sqlite",
+      "url": "sqlite:////Users/nancypravin/kact/SQL-BUDDY/world.db"
+    },
+    "world_copy": {
+      "type": "sqlite",
+      "url": "sqlite:////Users/nancypravin/kact/SQL-BUDDY/world.db"
+    },
+    "people": {
+      "type": "sqlite",
+      "url": "sqlite:////Users/nancypravin/kact/SQL-BUDDY/people.db"
+    }
+  }
+}

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SQL BUDDY</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f6f7f9;
+      padding: 40px;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    textarea {
+      width: 100%;
+      height: 80px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .box {
+      margin-top: 20px;
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    pre {
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>🤖 SQL BUDDY</h2>
+
+  <div class="box">
+  <strong>Active Database:</strong>
+  <select id="dbSelect" onchange="changeDatabase()"></select>
+  <span id="dbStatus"></span>
+</div>
+
+<div class="box">
+  <strong>Add Database</strong><br><br>
+
+  <input id="dbName" placeholder="Database name" /><br><br>
+
+  <select id="dbType">
+    <option value="postgres">PostgreSQL</option>
+    <option value="sqlite">SQLite</option>
+  </select><br><br>
+
+  <input id="dbUrl" placeholder="Connection URL" style="width:100%;" /><br><br>
+
+  <button onclick="addDatabase()">Add Database</button>
+
+  <div id="addDbStatus"></div>
+</div>
+
+<div class="box">
+  <strong>Discover Local SQLite Databases</strong><br><br>
+  <button onclick="discoverSQLite()">Scan Folder</button>
+  <div id="sqliteList"></div>
+</div>
+
+  <textarea id="query" placeholder="Ask in Tamil, Hindi, or English..."></textarea>
+  <br />
+  <button onclick="sendQuery()">Ask</button>
+
+  <div class="box">
+    <strong>English Interpretation:</strong>
+    <pre id="english"></pre>
+  </div>
+
+  <div class="box">
+    <strong>Generated SQL:</strong>
+    <pre id="sql"></pre>
+  </div>
+
+  <div class="box">
+    <strong>Result:</strong>
+    <pre id="result"></pre>
+  </div>
+</div>
+
+<script>
+async function loadDatabases() {
+  const res = await fetch("http://127.0.0.1:8000/databases");
+  const data = await res.json();
+
+  const select = document.getElementById("dbSelect");
+  select.innerHTML = "";
+
+  for (const name in data.databases) {
+    const option = document.createElement("option");
+    option.value = name;
+    option.text = name;
+    if (name === data.active) {
+      option.selected = true;
+    }
+    select.appendChild(option);
+  }
+
+  document.getElementById("dbStatus").innerText =
+    " (current: " + data.active + ")";
+}
+
+async function changeDatabase() {
+  const name = document.getElementById("dbSelect").value;
+
+  await fetch("http://127.0.0.1:8000/databases/select", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name })
+  });
+
+  document.getElementById("dbStatus").innerText =
+    " (switched to: " + name + ")";
+}
+
+async function sendQuery() {
+  const query = document.getElementById("query").value;
+
+  document.getElementById("english").innerText = "Loading...";
+  document.getElementById("sql").innerText = "";
+  document.getElementById("result").innerText = "";
+
+  const response = await fetch("http://127.0.0.1:8000/query", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query })
+  });
+
+  const data = await response.json();
+
+  document.getElementById("english").innerText = data.english_query;
+  document.getElementById("sql").innerText = data.sql;
+  document.getElementById("result").innerText =
+    JSON.stringify(data.rows, null, 2);
+}
+
+async function addDatabase() {
+  const name = document.getElementById("dbName").value;
+  const type = document.getElementById("dbType").value;
+  const url = document.getElementById("dbUrl").value;
+
+  document.getElementById("addDbStatus").innerText = "Adding...";
+
+  const res = await fetch("http://127.0.0.1:8000/databases/add", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, type, url })
+  });
+
+  if (res.ok) {
+    document.getElementById("addDbStatus").innerText = "✅ Database added";
+    loadDatabases();
+  } else {
+    const err = await res.json();
+    document.getElementById("addDbStatus").innerText =
+      "❌ Error: " + err.detail;
+  }
+}
+
+async function discoverSQLite() {
+  const res = await fetch("http://127.0.0.1:8000/databases/local/sqlite");
+  const data = await res.json();
+
+  const list = document.getElementById("sqliteList");
+  list.innerHTML = "";
+
+  if (data.sqlite_databases.length === 0) {
+    list.innerText = "No SQLite databases found.";
+    return;
+  }
+
+  data.sqlite_databases.forEach(db => {
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <code>${db.name}</code>
+      <button onclick="addDiscoveredDB('${db.name}', '${db.url}')">
+        Add
+      </button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+async function addDiscoveredDB(name, url) {
+  await fetch("http://127.0.0.1:8000/databases/add", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name,
+      type: "sqlite",
+      url
+    })
+  });
+
+  loadDatabases();
+}
+
+// Load databases on page load
+loadDatabases();
+</script>
+
+</body>
+</html>

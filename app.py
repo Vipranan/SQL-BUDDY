@@ -1,8 +1,12 @@
 from sqlite_discovery import discover_sqlite_dbs
 from db_context import get_active_db_context, execute_query
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+import uvicorn
 
 from schema_extractor import schema
 from prompt_builder import schema_to_prompt
@@ -19,6 +23,7 @@ from db_registry import (
 )
 
 app = FastAPI(title="SQL BUDDY")
+templates = Jinja2Templates(directory="web")
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,6 +32,10 @@ app.add_middleware(
     allow_methods=["*"],   # allows OPTIONS
     allow_headers=["*"],
 )
+
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 
@@ -104,3 +113,6 @@ def select_db(req: SelectDatabaseRequest):
 def list_local_sqlite():
     dbs = discover_sqlite_dbs(".")
     return {"sqlite_databases": dbs}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

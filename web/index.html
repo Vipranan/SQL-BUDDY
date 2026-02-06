@@ -2,100 +2,815 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SQL BUDDY</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SQL Buddy - Natural Language Database Query</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-light: #818cf8;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --bg-main: #0f172a;
+      --bg-card: #1e293b;
+      --bg-input: #334155;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --border: #334155;
+      --shadow: rgba(0, 0, 0, 0.3);
+    }
+
+    [data-theme="light"] {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-light: #818cf8;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --bg-main: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-input: #f1f5f9;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --border: #e2e8f0;
+      --shadow: rgba(0, 0, 0, 0.1);
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f6f7f9;
-      padding: 40px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 2rem;
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
     }
+
+    [data-theme="light"] body {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    }
+
+    [data-theme="dark"] body {
+      background: linear-gradient(135deg, var(--bg-main) 0%, #1a2332 100%);
+    }
+
     .container {
-      max-width: 700px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
+      max-width: 1200px;
+      margin: 0 auto;
     }
-    textarea {
-      width: 100%;
-      height: 80px;
-      padding: 10px;
-      font-size: 16px;
+
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeInDown 0.6s ease-out;
+      position: relative;
     }
-    button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
+
+    .header h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 2rem;
+      padding: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
       cursor: pointer;
     }
-    .box {
-      margin-top: 20px;
-      background: #f0f0f0;
-      padding: 10px;
-      border-radius: 5px;
+
+    .theme-toggle button {
+      padding: 0.5rem 1rem;
+      border-radius: 1.5rem;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 1.2rem;
     }
+
+    .theme-toggle button.active {
+      background: var(--primary);
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px var(--shadow);
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 12px var(--shadow);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .icon {
+      font-size: 1.5rem;
+    }
+
+    .input-group {
+      margin-bottom: 1rem;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button.secondary {
+      background: var(--bg-input);
+      color: var(--text-primary);
+    }
+
+    button.secondary:hover {
+      background: var(--border);
+    }
+
+    button.success {
+      background: var(--success);
+    }
+
+    button.success:hover {
+      background: #059669;
+    }
+
+    .result-box {
+      background: var(--bg-input);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-left: 4px solid var(--primary);
+    }
+
+    .result-box strong {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--primary-light);
+    }
+
     pre {
       white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: var(--text-primary);
+    }
+
+    .status {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 0.25rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+
+    .status.success {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--success);
+    }
+
+    .status.error {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--danger);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .db-item {
+      background: var(--bg-input);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .db-item code {
+      background: var(--bg-card);
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.9rem;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .query-section {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      padding: 2rem;
+      border-radius: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .query-section textarea {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      backdrop-filter: blur(10px);
+    }
+
+    .query-section textarea::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .query-section button {
+      background: white;
+      color: var(--primary);
+      width: 100%;
+      margin-top: 1rem;
+      font-size: 1.1rem;
+      padding: 1rem;
+    }
+
+    .query-section button:hover {
+      background: var(--text-primary);
+    }
+
+    .flex-row {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .view-toggle button {
+      flex: 1;
+      min-width: 150px;
+      padding: 0.5rem 1rem;
+      background: var(--bg-input);
+      color: var(--text-primary);
+    }
+
+    .view-toggle button.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .export-btn {
+      background: var(--success) !important;
+      color: white !important;
+      margin-left: auto;
+    }
+
+    .export-btn:hover {
+      background: #059669 !important;
+    }
+
+    .export-btn:disabled {
+      background: var(--border) !important;
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-top: 1rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-input);
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+
+    thead {
+      background: var(--primary);
+      color: white;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+    }
+
+    tbody tr {
+      transition: background 0.2s;
+    }
+
+    tbody tr:hover {
+      background: var(--bg-card);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .flex-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .theme-toggle {
+        position: static;
+        margin: 1rem auto;
+        width: fit-content;
+      }
+
+      table {
+        font-size: 0.85rem;
+      }
+
+      th, td {
+        padding: 0.5rem;
+      }
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h2>🤖 SQL BUDDY</h2>
-
-  <div class="box">
-  <strong>Active Database:</strong>
-  <select id="dbSelect" onchange="changeDatabase()"></select>
-  <span id="dbStatus"></span>
-</div>
-
-<div class="box">
-  <strong>Add Database</strong><br><br>
-
-  <input id="dbName" placeholder="Database name" /><br><br>
-
-  <select id="dbType">
-    <option value="postgres">PostgreSQL</option>
-    <option value="sqlite">SQLite</option>
-  </select><br><br>
-
-  <input id="dbUrl" placeholder="Connection URL" style="width:100%;" /><br><br>
-
-  <button onclick="addDatabase()">Add Database</button>
-
-  <div id="addDbStatus"></div>
-</div>
-
-<div class="box">
-  <strong>Discover Local SQLite Databases</strong><br><br>
-  <button onclick="discoverSQLite()">Scan Folder</button>
-  <div id="sqliteList"></div>
-</div>
-
-  <textarea id="query" placeholder="Ask in Tamil, Hindi, or English..."></textarea>
-  <br />
-  <button onclick="sendQuery()">Ask</button>
-
-  <div class="box">
-    <strong>English Interpretation:</strong>
-    <pre id="english"></pre>
+  <div class="header">
+    <div class="theme-toggle">
+      <button id="darkBtn" class="active" onclick="setTheme('dark')" title="Dark Mode">🌙</button>
+      <button id="lightBtn" onclick="setTheme('light')" title="Light Mode">☀️</button>
+    </div>
+    <h1>🤖 SQL Buddy</h1>
+    <p>Ask questions in natural language, get SQL results instantly</p>
   </div>
 
-  <div class="box">
-    <strong>Generated SQL:</strong>
-    <pre id="sql"></pre>
+  <div class="card">
+    <div class="card-title">
+      <span class="icon">🗄️</span>
+      Active Database
+    </div>
+    <div class="flex-row">
+      <select id="dbSelect" onchange="changeDatabase()"></select>
+      <span id="dbStatus"></span>
+    </div>
   </div>
 
-  <div class="box">
-    <strong>Result:</strong>
-    <pre id="result"></pre>
+  <div class="query-section">
+    <textarea id="query" placeholder="Ask in Tamil, Hindi, or English... e.g., 'Show me all customers from India'"></textarea>
+    <button onclick="sendQuery()">
+      <span>✨</span>
+      Ask Question
+    </button>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">🌐</span>
+        English Interpretation
+      </div>
+      <div class="result-box">
+        <pre id="english">Your question will appear here...</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">⚡</span>
+        Generated SQL
+      </div>
+      <div class="result-box">
+        <pre id="sql">SQL query will appear here...</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon">📊</span>
+      Query Results
+    </div>
+    <div class="view-toggle">
+      <button id="tableViewBtn" class="active" onclick="switchView('table')">📋 Table View</button>
+      <button id="jsonViewBtn" onclick="switchView('json')">{ } JSON View</button>
+      <button id="exportPdfBtn" class="export-btn" onclick="exportToPDF()" disabled>📄 Save as PDF</button>
+    </div>
+    <div id="tableView" class="table-container">
+      <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Results will appear here...</p>
+    </div>
+    <div id="jsonView" class="result-box hidden">
+      <pre id="result">Results will appear here...</pre>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">➕</span>
+        Add Database
+      </div>
+      <div class="input-group">
+        <label>Database Name</label>
+        <input id="dbName" placeholder="my_database" />
+      </div>
+      <div class="input-group">
+        <label>Database Type</label>
+        <select id="dbType">
+          <option value="postgres">PostgreSQL</option>
+          <option value="sqlite">SQLite</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Connection URL</label>
+        <input id="dbUrl" placeholder="postgresql://user:pass@host:5432/db" />
+      </div>
+      <button onclick="addDatabase()" class="success">Add Database</button>
+      <div id="addDbStatus"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">🔍</span>
+        Discover SQLite Databases
+      </div>
+      <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">
+        Scan current folder for local SQLite databases
+      </p>
+      <button onclick="discoverSQLite()" class="secondary">
+        <span>🔎</span>
+        Scan Folder
+      </button>
+      <div id="sqliteList"></div>
+    </div>
   </div>
 </div>
 
 <script>
+let currentView = 'table';
+let currentData = null;
+let currentQuery = '';
+
+// Theme Management
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+  
+  document.getElementById('darkBtn').classList.toggle('active', theme === 'dark');
+  document.getElementById('lightBtn').classList.toggle('active', theme === 'light');
+}
+
+// Load saved theme
+const savedTheme = localStorage.getItem('theme') || 'dark';
+setTheme(savedTheme);
+
+// View Switching
+function switchView(view) {
+  currentView = view;
+  
+  document.getElementById('tableViewBtn').classList.toggle('active', view === 'table');
+  document.getElementById('jsonViewBtn').classList.toggle('active', view === 'json');
+  
+  document.getElementById('tableView').classList.toggle('hidden', view === 'json');
+  document.getElementById('jsonView').classList.toggle('hidden', view === 'table');
+  
+  if (currentData) {
+    displayResults(currentData);
+  }
+}
+
+function displayResults(data) {
+  currentData = data;
+  
+  // Enable/disable PDF export button
+  const exportBtn = document.getElementById('exportPdfBtn');
+  if (data.rows && data.rows.length > 0) {
+    exportBtn.disabled = false;
+  } else {
+    exportBtn.disabled = true;
+  }
+  
+  // Update JSON view
+  document.getElementById("result").innerText = JSON.stringify(data.rows, null, 2);
+  
+  // Update Table view
+  const tableView = document.getElementById("tableView");
+  
+  if (!data.rows || data.rows.length === 0) {
+    tableView.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No results found.</p>';
+    return;
+  }
+  
+  // Create table
+  let tableHTML = '<table><thead><tr>';
+  
+  // Add headers from columns
+  if (data.columns && data.columns.length > 0) {
+    data.columns.forEach(col => {
+      tableHTML += `<th>${col}</th>`;
+    });
+  } else {
+    // Fallback: use keys from first row
+    Object.keys(data.rows[0]).forEach(key => {
+      tableHTML += `<th>${key}</th>`;
+    });
+  }
+  
+  tableHTML += '</tr></thead><tbody>';
+  
+  // Add rows
+  data.rows.forEach(row => {
+    tableHTML += '<tr>';
+    if (Array.isArray(row)) {
+      row.forEach(cell => {
+        tableHTML += `<td>${cell !== null ? cell : '<em style="color: var(--text-secondary);">null</em>'}</td>`;
+      });
+    } else {
+      Object.values(row).forEach(cell => {
+        tableHTML += `<td>${cell !== null ? cell : '<em style="color: var(--text-secondary);">null</em>'}</td>`;
+      });
+    }
+    tableHTML += '</tr>';
+  });
+  
+  tableHTML += '</tbody></table>';
+  tableView.innerHTML = tableHTML;
+}
+
+function exportToPDF() {
+  if (!currentData || !currentData.rows || currentData.rows.length === 0) {
+    alert('No data to export!');
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  
+  // Prepare table data first to determine orientation
+  const columns = currentData.columns || Object.keys(currentData.rows[0]);
+  const rows = currentData.rows.map(row => {
+    if (Array.isArray(row)) {
+      return row.map(cell => cell !== null ? String(cell) : 'null');
+    } else {
+      return Object.values(row).map(cell => cell !== null ? String(cell) : 'null');
+    }
+  });
+  
+  // Use landscape if there are many columns
+  const orientation = columns.length > 5 ? 'landscape' : 'portrait';
+  const doc = new jsPDF(orientation);
+  
+  let yPosition = 15;
+  
+  // Add title
+  doc.setFontSize(18);
+  doc.setTextColor(99, 102, 241);
+  doc.text('SQL Buddy - Query Results', 14, yPosition);
+  yPosition += 10;
+  
+  // Add database info
+  doc.setFontSize(10);
+  doc.setTextColor(100, 100, 100);
+  doc.text(`Database: ${currentData.active_database || 'N/A'}`, 14, yPosition);
+  yPosition += 7;
+  
+  // Add query (with text wrapping)
+  if (currentQuery) {
+    doc.setFontSize(9);
+    const maxWidth = orientation === 'landscape' ? 270 : 180;
+    const queryLines = doc.splitTextToSize(`Query: ${currentQuery}`, maxWidth);
+    doc.text(queryLines, 14, yPosition);
+    yPosition += (queryLines.length * 5);
+  }
+  
+  // Add English interpretation (with text wrapping)
+  if (currentData.english_query) {
+    const maxWidth = orientation === 'landscape' ? 270 : 180;
+    const englishLines = doc.splitTextToSize(`English: ${currentData.english_query}`, maxWidth);
+    doc.text(englishLines, 14, yPosition);
+    yPosition += (englishLines.length * 5);
+  }
+  
+  // Add SQL (with text wrapping)
+  if (currentData.sql) {
+    doc.setTextColor(79, 70, 229);
+    const maxWidth = orientation === 'landscape' ? 270 : 180;
+    const sqlLines = doc.splitTextToSize(`SQL: ${currentData.sql}`, maxWidth);
+    doc.text(sqlLines, 14, yPosition);
+    yPosition += (sqlLines.length * 5) + 5;
+  }
+  
+  // Add table with better column sizing
+  doc.autoTable({
+    head: [columns],
+    body: rows,
+    startY: yPosition,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [99, 102, 241],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      fontSize: 9,
+      halign: 'center',
+      valign: 'middle'
+    },
+    bodyStyles: {
+      fontSize: 8,
+      textColor: [50, 50, 50],
+      halign: 'left',
+      valign: 'middle'
+    },
+    alternateRowStyles: {
+      fillColor: [245, 247, 250]
+    },
+    styles: {
+      cellPadding: 3,
+      overflow: 'linebreak',
+      cellWidth: 'auto',
+      minCellHeight: 8,
+      lineColor: [200, 200, 200],
+      lineWidth: 0.1
+    },
+    columnStyles: {},
+    margin: { left: 14, right: 14 },
+    tableWidth: 'auto',
+    // Better handling of column widths
+    didParseCell: function(data) {
+      // Ensure minimum column width
+      if (data.section === 'head') {
+        data.cell.styles.minCellWidth = 20;
+      }
+    }
+  });
+  
+  // Add footer
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    const footerText = `Page ${i} of ${pageCount} | Generated on ${new Date().toLocaleString()}`;
+    doc.text(
+      footerText,
+      doc.internal.pageSize.getWidth() / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: 'center' }
+    );
+  }
+  
+  // Save the PDF
+  const filename = `sql_buddy_results_${new Date().getTime()}.pdf`;
+  doc.save(filename);
+}
+
 async function loadDatabases() {
-  const res = await fetch("http://127.0.0.1:8000/databases");
+  const res = await fetch("/databases");
   const data = await res.json();
 
   const select = document.getElementById("dbSelect");
@@ -111,42 +826,64 @@ async function loadDatabases() {
     select.appendChild(option);
   }
 
-  document.getElementById("dbStatus").innerText =
-    " (current: " + data.active + ")";
+  document.getElementById("dbStatus").innerHTML =
+    `<span class="status success">${data.active}</span>`;
 }
 
 async function changeDatabase() {
   const name = document.getElementById("dbSelect").value;
 
-  await fetch("http://127.0.0.1:8000/databases/select", {
+  await fetch("/databases/select", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name })
   });
 
-  document.getElementById("dbStatus").innerText =
-    " (switched to: " + name + ")";
+  document.getElementById("dbStatus").innerHTML =
+    `<span class="status success">${name}</span>`;
 }
 
 async function sendQuery() {
   const query = document.getElementById("query").value;
+  currentQuery = query;
 
-  document.getElementById("english").innerText = "Loading...";
-  document.getElementById("sql").innerText = "";
-  document.getElementById("result").innerText = "";
+  if (!query.trim()) {
+    alert("Please enter a question!");
+    return;
+  }
 
-  const response = await fetch("http://127.0.0.1:8000/query", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query })
-  });
+  document.getElementById("english").innerHTML = '<span class="loading"></span> Translating...';
+  document.getElementById("sql").innerHTML = '<span class="loading"></span> Generating SQL...';
+  
+  const tableView = document.getElementById("tableView");
+  const jsonView = document.getElementById("jsonView");
+  const exportBtn = document.getElementById('exportPdfBtn');
+  exportBtn.disabled = true;
+  
+  if (currentView === 'table') {
+    tableView.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;"><span class="loading"></span> Executing query...</p>';
+  } else {
+    document.getElementById("result").innerHTML = '<span class="loading"></span> Executing query...';
+  }
 
-  const data = await response.json();
+  try {
+    const response = await fetch("/query", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query })
+    });
 
-  document.getElementById("english").innerText = data.english_query;
-  document.getElementById("sql").innerText = data.sql;
-  document.getElementById("result").innerText =
-    JSON.stringify(data.rows, null, 2);
+    const data = await response.json();
+
+    document.getElementById("english").innerText = data.english_query;
+    document.getElementById("sql").innerText = data.sql;
+    
+    displayResults(data);
+  } catch (error) {
+    const errorMsg = `<span style="color: var(--danger)">Error: ${error.message}</span>`;
+    document.getElementById("result").innerHTML = errorMsg;
+    tableView.innerHTML = `<p style="text-align: center; padding: 2rem;">${errorMsg}</p>`;
+  }
 }
 
 async function addDatabase() {
@@ -154,50 +891,74 @@ async function addDatabase() {
   const type = document.getElementById("dbType").value;
   const url = document.getElementById("dbUrl").value;
 
-  document.getElementById("addDbStatus").innerText = "Adding...";
+  if (!name || !url) {
+    alert("Please fill in all fields!");
+    return;
+  }
 
-  const res = await fetch("http://127.0.0.1:8000/databases/add", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, type, url })
-  });
+  document.getElementById("addDbStatus").innerHTML =
+    '<span class="loading"></span> Adding database...';
 
-  if (res.ok) {
-    document.getElementById("addDbStatus").innerText = "✅ Database added";
-    loadDatabases();
-  } else {
-    const err = await res.json();
-    document.getElementById("addDbStatus").innerText =
-      "❌ Error: " + err.detail;
+  try {
+    const res = await fetch("/databases/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, type, url })
+    });
+
+    if (res.ok) {
+      document.getElementById("addDbStatus").innerHTML =
+        '<span class="status success">✅ Database added successfully!</span>';
+      document.getElementById("dbName").value = "";
+      document.getElementById("dbUrl").value = "";
+      loadDatabases();
+    } else {
+      const err = await res.json();
+      document.getElementById("addDbStatus").innerHTML =
+        `<span class="status error">❌ Error: ${err.detail}</span>`;
+    }
+  } catch (error) {
+    document.getElementById("addDbStatus").innerHTML =
+      `<span class="status error">❌ Error: ${error.message}</span>`;
   }
 }
 
 async function discoverSQLite() {
-  const res = await fetch("http://127.0.0.1:8000/databases/local/sqlite");
-  const data = await res.json();
+  document.getElementById("sqliteList").innerHTML =
+    '<div style="margin-top: 1rem;"><span class="loading"></span> Scanning...</div>';
 
-  const list = document.getElementById("sqliteList");
-  list.innerHTML = "";
+  try {
+    const res = await fetch("/databases/local/sqlite");
+    const data = await res.json();
 
-  if (data.sqlite_databases.length === 0) {
-    list.innerText = "No SQLite databases found.";
-    return;
+    const list = document.getElementById("sqliteList");
+    list.innerHTML = "";
+
+    if (data.sqlite_databases.length === 0) {
+      list.innerHTML = '<p style="margin-top: 1rem; color: var(--text-secondary);">No SQLite databases found.</p>';
+      return;
+    }
+
+    data.sqlite_databases.forEach(db => {
+      const div = document.createElement("div");
+      div.className = "db-item";
+      div.style.marginTop = "1rem";
+      div.innerHTML = `
+        <code>${db.name}</code>
+        <button onclick="addDiscoveredDB('${db.name}', '${db.url}')" class="success">
+          Add
+        </button>
+      `;
+      list.appendChild(div);
+    });
+  } catch (error) {
+    document.getElementById("sqliteList").innerHTML =
+      `<p style="margin-top: 1rem; color: var(--danger);">Error: ${error.message}</p>`;
   }
-
-  data.sqlite_databases.forEach(db => {
-    const div = document.createElement("div");
-    div.innerHTML = `
-      <code>${db.name}</code>
-      <button onclick="addDiscoveredDB('${db.name}', '${db.url}')">
-        Add
-      </button>
-    `;
-    list.appendChild(div);
-  });
 }
 
 async function addDiscoveredDB(name, url) {
-  await fetch("http://127.0.0.1:8000/databases/add", {
+  await fetch("/databases/add", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -208,6 +969,7 @@ async function addDiscoveredDB(name, url) {
   });
 
   loadDatabases();
+  alert(`Database "${name}" added successfully!`);
 }
 
 // Load databases on page load

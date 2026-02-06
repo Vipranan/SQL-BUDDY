@@ -1,5 +1,5 @@
 {
-  "active": "people",
+  "active": "chinook",
   "databases": {
     "postgres_local": {
       "type": "postgres",

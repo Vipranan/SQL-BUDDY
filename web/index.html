@@ -542,6 +542,7 @@
       <button id="tableViewBtn" class="active" onclick="switchView('table')">📋 Table View</button>
       <button id="jsonViewBtn" onclick="switchView('json')">{ } JSON View</button>
       <button id="exportPdfBtn" class="export-btn" onclick="exportToPDF()" disabled>📄 Save as PDF</button>
+      <button id="exportCsvBtn" class="export-btn" onclick="exportToCSV()" disabled>📊 Save as CSV</button>
     </div>
     <div id="tableView" class="table-container">
       <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Results will appear here...</p>
@@ -629,12 +630,15 @@ function switchView(view) {
 function displayResults(data) {
   currentData = data;
   
-  // Enable/disable PDF export button
-  const exportBtn = document.getElementById('exportPdfBtn');
+  // Enable/disable export buttons
+  const exportPdfBtn = document.getElementById('exportPdfBtn');
+  const exportCsvBtn = document.getElementById('exportCsvBtn');
   if (data.rows && data.rows.length > 0) {
-    exportBtn.disabled = false;
+    exportPdfBtn.disabled = false;
+    exportCsvBtn.disabled = false;
   } else {
-    exportBtn.disabled = true;
+    exportPdfBtn.disabled = true;
+    exportCsvBtn.disabled = true;
   }
   
   // Update JSON view
@@ -809,6 +813,61 @@ function exportToPDF() {
   doc.save(filename);
 }
 
+function exportToCSV() {
+  if (!currentData || !currentData.rows || currentData.rows.length === 0) {
+    alert('No data to export!');
+    return;
+  }
+
+  const columns = currentData.columns || Object.keys(currentData.rows[0]);
+  const rows = currentData.rows;
+  
+  // Helper function to escape CSV values
+  function escapeCSV(value) {
+    if (value === null || value === undefined) {
+      return '';
+    }
+    const str = String(value);
+    // If value contains comma, quote, or newline, wrap in quotes and escape quotes
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+  }
+  
+  // Build CSV content
+  let csvContent = '';
+  
+  // Add header row
+  csvContent += columns.map(escapeCSV).join(',') + '\n';
+  
+  // Add data rows
+  rows.forEach(row => {
+    let rowData;
+    if (Array.isArray(row)) {
+      rowData = row;
+    } else {
+      rowData = Object.values(row);
+    }
+    csvContent += rowData.map(escapeCSV).join(',') + '\n';
+  });
+  
+  // Create blob and download
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  
+  link.setAttribute('href', url);
+  link.setAttribute('download', `sql_buddy_results_${new Date().getTime()}.csv`);
+  link.style.visibility = 'hidden';
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  URL.revokeObjectURL(url);
+}
+
 async function loadDatabases() {
   const res = await fetch("/databases");
   const data = await res.json();
@@ -857,8 +916,10 @@ async function sendQuery() {
   
   const tableView = document.getElementById("tableView");
   const jsonView = document.getElementById("jsonView");
-  const exportBtn = document.getElementById('exportPdfBtn');
-  exportBtn.disabled = true;
+  const exportPdfBtn = document.getElementById('exportPdfBtn');
+  const exportCsvBtn = document.getElementById('exportCsvBtn');
+  exportPdfBtn.disabled = true;
+  exportCsvBtn.disabled = true;
   
   if (currentView === 'table') {
     tableView.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;"><span class="loading"></span> Executing query...</p>';

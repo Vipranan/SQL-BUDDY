@@ -1,0 +1,1181 @@
+/* ============================================
+   SQL BUDDY — Apple macOS Tahoe "Liquid Glass" Design
+   ============================================ */
+
+/* Google Fonts: SF-like alternative */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* Reset */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ============================================
+   Design Tokens — Dark (Tahoe Night)
+   ============================================ */
+:root {
+  /* Accent Spectrum */
+  --accent-blue: #007AFF;
+  --accent-blue-hover: #0066DD;
+  --accent-purple: #AF52DE;
+  --accent-indigo: #5856D6;
+  --accent-teal: #5AC8FA;
+  --accent-green: #30D158;
+  --accent-orange: #FF9F0A;
+  --accent-red: #FF453A;
+  --accent-pink: #FF2D55;
+  --accent-yellow: #FFD60A;
+
+  /* Surfaces — Tahoe Dark */
+  --bg-desktop: #1a1a2e;
+  --bg-window: rgba(30, 30, 50, 0.72);
+  --bg-window-solid: #1e1e32;
+  --bg-sidebar: rgba(25, 25, 45, 0.65);
+  --bg-toolbar: rgba(40, 40, 65, 0.55);
+  --bg-field: rgba(255, 255, 255, 0.06);
+  --bg-field-focus: rgba(255, 255, 255, 0.1);
+  --bg-hover: rgba(255, 255, 255, 0.08);
+  --bg-active: rgba(255, 255, 255, 0.12);
+  --bg-popover: rgba(35, 35, 58, 0.85);
+
+  /* Text */
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.55);
+  --text-tertiary: rgba(255, 255, 255, 0.35);
+  --text-inverse: #000000;
+
+  /* Borders — Liquid Glass Refractive Edge */
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-bright: rgba(255, 255, 255, 0.2);
+  --glass-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --border-divider: rgba(255, 255, 255, 0.08);
+
+  /* Shadows */
+  --shadow-window: 0 24px 80px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
+  --shadow-button: 0 1px 3px rgba(0, 0, 0, 0.3), 0 0.5px 1px rgba(0, 0, 0, 0.2);
+  --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.5);
+
+  /* Blur */
+  --blur-window: blur(40px) saturate(180%);
+  --blur-card: blur(24px) saturate(150%);
+  --blur-toolbar: blur(30px) saturate(160%);
+
+  /* Radii — Tahoe's softer, more organic radii */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-window: 14px;
+  --radius-pill: 999px;
+
+  /* Typography */
+  --font-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', 'Helvetica Neue', system-ui, sans-serif;
+  --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Monaco', monospace;
+
+  /* Transitions — macOS spring-like */
+  --transition-snappy: 180ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  --transition-smooth: 300ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  --transition-spring: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-slow: 500ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* ============================================
+   Design Tokens — Light (Tahoe Day)
+   ============================================ */
+[data-theme="light"] {
+  --bg-desktop: #ececf0;
+  --bg-window: rgba(255, 255, 255, 0.68);
+  --bg-window-solid: #ffffff;
+  --bg-sidebar: rgba(245, 245, 250, 0.6);
+  --bg-toolbar: rgba(255, 255, 255, 0.5);
+  --bg-field: rgba(0, 0, 0, 0.04);
+  --bg-field-focus: rgba(0, 0, 0, 0.06);
+  --bg-hover: rgba(0, 0, 0, 0.04);
+  --bg-active: rgba(0, 0, 0, 0.08);
+  --bg-popover: rgba(255, 255, 255, 0.82);
+
+  --text-primary: rgba(0, 0, 0, 0.85);
+  --text-secondary: rgba(0, 0, 0, 0.5);
+  --text-tertiary: rgba(0, 0, 0, 0.3);
+  --text-inverse: #ffffff;
+
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-border-bright: rgba(0, 0, 0, 0.12);
+  --glass-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --border-divider: rgba(0, 0, 0, 0.06);
+
+  --shadow-window: 0 24px 80px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-button: 0 0.5px 2px rgba(0, 0, 0, 0.12), 0 0.5px 1px rgba(0, 0, 0, 0.06);
+  --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* ============================================
+   Base
+   ============================================ */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-system);
+  background: var(--bg-desktop);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  transition: background var(--transition-slow), color var(--transition-slow);
+  overflow-x: hidden;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* Desktop gradient — mimics Tahoe wallpaper feel */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 100% 80% at 50% -30%, rgba(88, 86, 214, 0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 60% at 80% 110%, rgba(90, 200, 250, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 50% at 10% 50%, rgba(175, 82, 222, 0.08) 0%, transparent 50%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+[data-theme="light"] body::before {
+  background:
+    radial-gradient(ellipse 100% 80% at 50% -30%, rgba(88, 86, 214, 0.1) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 60% at 80% 110%, rgba(90, 200, 250, 0.06) 0%, transparent 50%);
+}
+
+/* macOS-style thin scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-pill);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+  background-clip: padding-box;
+}
+
+::selection {
+  background: var(--accent-blue);
+  color: white;
+}
+
+/* ============================================
+   Layout — macOS Window Container
+   ============================================ */
+
+.app-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+/* ============================================
+   Liquid Glass Card — Core Tahoe Component
+   ============================================ */
+
+.glass-card {
+  background: var(--bg-window);
+  backdrop-filter: var(--blur-card);
+  -webkit-backdrop-filter: var(--blur-card);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-card), var(--glass-inner-glow);
+  transition:
+    transform var(--transition-smooth),
+    box-shadow var(--transition-smooth),
+    border-color var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Refractive top-edge highlight — Liquid Glass signature */
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.15) 20%,
+      rgba(255, 255, 255, 0.25) 50%,
+      rgba(255, 255, 255, 0.15) 80%,
+      transparent 100%);
+  pointer-events: none;
+}
+
+[data-theme="light"] .glass-card::before {
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.6) 20%,
+      rgba(255, 255, 255, 0.9) 50%,
+      rgba(255, 255, 255, 0.6) 80%,
+      transparent 100%);
+}
+
+.glass-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-float), var(--glass-inner-glow);
+  border-color: var(--glass-border-bright);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.card-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.card-icon.purple {
+  background: rgba(88, 86, 214, 0.18);
+  color: var(--accent-indigo);
+}
+
+.card-icon.cyan {
+  background: rgba(90, 200, 250, 0.15);
+  color: var(--accent-teal);
+}
+
+.card-icon.green {
+  background: rgba(48, 209, 88, 0.15);
+  color: var(--accent-green);
+}
+
+.card-icon.orange {
+  background: rgba(255, 159, 10, 0.15);
+  color: var(--accent-orange);
+}
+
+.card-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.card-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.1rem;
+}
+
+/* ============================================
+   Header — Tahoe Window Titlebar Style
+   ============================================ */
+
+.header {
+  text-align: center;
+  padding: 1.5rem 0 2rem;
+  position: relative;
+}
+
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.85rem;
+  background: var(--bg-toolbar);
+  backdrop-filter: var(--blur-toolbar);
+  -webkit-backdrop-filter: var(--blur-toolbar);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  letter-spacing: 0.01em;
+}
+
+.header-badge .dot {
+  width: 6px;
+  height: 6px;
+  background: var(--accent-green);
+  border-radius: 50%;
+  animation: tahoe-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes tahoe-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.4;
+    transform: scale(1.3);
+  }
+}
+
+.header h1 {
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
+}
+
+.header h1 .gradient-text {
+  background: linear-gradient(135deg,
+      var(--accent-blue) 0%,
+      var(--accent-indigo) 40%,
+      var(--accent-purple) 70%,
+      var(--accent-teal) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  max-width: 440px;
+  margin: 0 auto;
+  font-weight: 400;
+}
+
+.header-controls {
+  position: absolute;
+  top: 1.5rem;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ============================================
+   Theme Toggle — macOS-style Segmented Control
+   ============================================ */
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  background: var(--bg-field);
+  backdrop-filter: var(--blur-card);
+  -webkit-backdrop-filter: var(--blur-card);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  gap: 2px;
+}
+
+.theme-toggle button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  transition: all var(--transition-snappy);
+  color: var(--text-secondary);
+}
+
+.theme-toggle button.active {
+  background: var(--accent-blue);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.35);
+}
+
+.theme-toggle button:hover:not(.active) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ============================================
+   Database Selector — macOS Dropdown Style
+   ============================================ */
+
+.db-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.db-selector select {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-field);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-family: var(--font-system);
+  cursor: pointer;
+  transition: all var(--transition-snappy);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23888' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
+  box-shadow: var(--shadow-button);
+}
+
+.db-selector select:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.25);
+}
+
+.db-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(48, 209, 88, 0.12);
+  color: var(--accent-green);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.db-status .status-dot {
+  width: 5px;
+  height: 5px;
+  background: currentColor;
+  border-radius: 50%;
+}
+
+/* ============================================
+   Query Section — Liquid Glass Input Area
+   ============================================ */
+
+.query-section {
+  position: relative;
+  background: linear-gradient(135deg,
+      rgba(0, 122, 255, 0.85) 0%,
+      rgba(88, 86, 214, 0.85) 50%,
+      rgba(175, 82, 222, 0.85) 100%);
+  backdrop-filter: var(--blur-card);
+  -webkit-backdrop-filter: var(--blur-card);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  box-shadow:
+    var(--shadow-card),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+    0 1px 0 rgba(255, 255, 255, 0.15) inset;
+}
+
+/* Liquid Glass refraction shimmer */
+.query-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 25% 75%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 75% 25%, rgba(255, 255, 255, 0.06) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+/* Top refractive edge */
+.query-section::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.3) 30%,
+      rgba(255, 255, 255, 0.5) 50%,
+      rgba(255, 255, 255, 0.3) 70%,
+      transparent 100%);
+  pointer-events: none;
+}
+
+.query-section .query-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.78rem;
+  font-weight: 500;
+  margin-bottom: 0.6rem;
+  position: relative;
+}
+
+.query-section textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-md);
+  color: white;
+  font-size: 0.9rem;
+  font-family: var(--font-system);
+  resize: vertical;
+  transition: all var(--transition-snappy);
+  position: relative;
+  line-height: 1.55;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.query-section textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.query-section textarea:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.1),
+    0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   macOS Tahoe Buttons
+   ============================================ */
+
+/* Primary CTA — macOS-style filled button */
+.query-submit-btn {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.65rem 1.25rem;
+  background: rgba(255, 255, 255, 0.92);
+  color: rgba(0, 0, 0, 0.85);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: var(--font-system);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: all var(--transition-snappy);
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  letter-spacing: -0.01em;
+}
+
+.query-submit-btn:hover {
+  background: white;
+  transform: translateY(-0.5px);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.query-submit-btn:active {
+  transform: translateY(0);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.query-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.query-submit-btn .spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-top-color: rgba(0, 0, 0, 0.7);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* General macOS button */
+.btn {
+  padding: 0.45rem 1rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 500;
+  font-family: var(--font-system);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all var(--transition-snappy);
+  letter-spacing: -0.01em;
+  position: relative;
+}
+
+/* macOS Blue Button */
+.btn-primary {
+  background: var(--accent-blue);
+  color: white;
+  box-shadow: var(--shadow-button), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.btn-primary:hover {
+  background: var(--accent-blue-hover);
+  transform: translateY(-0.5px);
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  filter: brightness(0.9);
+}
+
+/* macOS Green Button */
+.btn-success {
+  background: var(--accent-green);
+  color: rgba(0, 0, 0, 0.85);
+  box-shadow: var(--shadow-button), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-success:hover {
+  filter: brightness(1.05);
+  transform: translateY(-0.5px);
+  box-shadow: 0 2px 8px rgba(48, 209, 88, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-success:active {
+  transform: translateY(0);
+  filter: brightness(0.95);
+}
+
+/* macOS Ghost/Secondary Button */
+.btn-ghost {
+  background: var(--bg-field);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-button);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-hover);
+  border-color: var(--glass-border-bright);
+  transform: translateY(-0.5px);
+}
+
+.btn-ghost:active {
+  transform: translateY(0);
+  background: var(--bg-active);
+}
+
+/* ============================================
+   Results Grid
+   ============================================ */
+
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.result-box {
+  background: var(--bg-field);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--accent-blue);
+  min-height: 50px;
+}
+
+.result-box.accent {
+  border-left-color: var(--accent-purple);
+}
+
+.result-box pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+
+.result-placeholder {
+  color: var(--text-tertiary);
+  font-style: italic;
+  font-size: 0.82rem;
+}
+
+/* ============================================
+   View Toggle — macOS Segmented Control
+   ============================================ */
+
+.view-toggle {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.view-toggle .toggle-btn {
+  flex: 0 0 auto;
+  padding: 0.4rem 0.85rem;
+  background: var(--bg-field);
+  color: var(--text-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 500;
+  font-family: var(--font-system);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all var(--transition-snappy);
+  box-shadow: var(--shadow-button);
+}
+
+.view-toggle .toggle-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.view-toggle .toggle-btn.active {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Export buttons */
+.export-btn {
+  padding: 0.4rem 0.85rem;
+  background: var(--bg-field);
+  color: var(--text-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 500;
+  font-family: var(--font-system);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all var(--transition-snappy);
+  box-shadow: var(--shadow-button);
+}
+
+.export-btn:first-of-type {
+  margin-left: auto;
+}
+
+.export-btn:hover:not(:disabled) {
+  background: var(--accent-green);
+  color: rgba(0, 0, 0, 0.85);
+  border-color: var(--accent-green);
+  transform: translateY(-0.5px);
+}
+
+.export-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   Table — macOS Tahoe Data Table
+   ============================================ */
+
+.table-container {
+  overflow-x: auto;
+  margin-top: 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: var(--bg-field);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table thead {
+  background: linear-gradient(135deg,
+      rgba(0, 122, 255, 0.9) 0%,
+      rgba(88, 86, 214, 0.9) 100%);
+}
+
+.data-table th {
+  padding: 0.6rem 0.85rem;
+  text-align: left;
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 0.55rem 0.85rem;
+  border-bottom: 1px solid var(--border-divider);
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table tbody tr {
+  transition: background var(--transition-snappy);
+}
+
+.data-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.null-value {
+  color: var(--text-tertiary);
+  font-style: italic;
+  font-size: 0.78rem;
+}
+
+/* JSON View */
+.json-view {
+  background: var(--bg-field);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-top: 0.75rem;
+  max-height: 450px;
+  overflow: auto;
+  border: 1px solid var(--glass-border);
+}
+
+.json-view pre {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.row-count {
+  color: var(--text-tertiary);
+  font-size: 0.72rem;
+  margin-top: 0.6rem;
+  text-align: right;
+}
+
+/* ============================================
+   Forms — macOS Native Style
+   ============================================ */
+
+.form-group {
+  margin-bottom: 0.75rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-field);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-family: var(--font-system);
+  transition: all var(--transition-snappy);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.06),
+    0 0 0 3px rgba(0, 122, 255, 0.25);
+}
+
+.form-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* ============================================
+   Discovered DB Item
+   ============================================ */
+
+.db-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-field);
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-sm);
+  margin-top: 0.6rem;
+  border: 1px solid var(--glass-border);
+  transition: all var(--transition-snappy);
+}
+
+.db-item:hover {
+  border-color: var(--accent-blue);
+  background: var(--bg-hover);
+}
+
+.db-item code {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  background: var(--bg-active);
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-xs);
+  color: var(--accent-teal);
+}
+
+.db-item .btn {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+}
+
+/* ============================================
+   Grid Layouts
+   ============================================ */
+
+.two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* ============================================
+   Loading Skeleton — Tahoe shimmer
+   ============================================ */
+
+.skeleton {
+  background: linear-gradient(90deg,
+      var(--bg-field) 25%,
+      var(--bg-hover) 50%,
+      var(--bg-field) 75%);
+  background-size: 200% 100%;
+  animation: tahoe-shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes tahoe-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ============================================
+   Empty State
+   ============================================ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+  color: var(--text-tertiary);
+  text-align: center;
+  gap: 0.4rem;
+}
+
+.empty-state .empty-icon {
+  font-size: 2rem;
+  margin-bottom: 0.4rem;
+  opacity: 0.4;
+}
+
+.empty-state p {
+  font-size: 0.82rem;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 768px) {
+  .app-container {
+    padding: 0 1rem;
+    margin: 1rem auto;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .header-controls {
+    position: static;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .results-grid,
+  .two-col-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .query-section {
+    padding: 1.25rem;
+  }
+
+  .view-toggle {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .export-btn:first-of-type {
+    margin-left: 0;
+  }
+
+  .db-selector {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ============================================
+   Animations (Framer Motion overrides)
+   ============================================ */
+
+.motion-card {
+  will-change: transform, opacity;
+}
+
+/* ============================================
+   macOS Tahoe Window Chrome —
+   Traffic Light Dots (decorative)
+   ============================================ */
+
+.window-chrome {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--border-divider);
+  margin: -1.25rem -1.25rem 1rem -1.25rem;
+  padding-left: 1.25rem;
+}
+
+.traffic-light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: relative;
+  transition: filter var(--transition-snappy);
+}
+
+.traffic-light.red {
+  background: #FF5F57;
+  box-shadow: inset 0 -1px 1px rgba(0, 0, 0, 0.15);
+}
+
+.traffic-light.yellow {
+  background: #FEBC2E;
+  box-shadow: inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.traffic-light.green {
+  background: #28C840;
+  box-shadow: inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.window-chrome:hover .traffic-light {
+  filter: brightness(1.1);
+}
+
+.window-title {
+  flex: 1;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-right: 42px;
+  /* offset traffic lights width */
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 2.5rem 0 1.5rem;
+  color: var(--text-tertiary);
+  font-size: 0.72rem;
+}
+
+.footer a {
+  color: var(--accent-blue);
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}

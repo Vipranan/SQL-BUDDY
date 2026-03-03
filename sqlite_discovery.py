@@ -3,8 +3,11 @@ from pathlib import Path
 
 SEARCH_EXTS = (".db", ".sqlite", ".sqlite3")
 
+# Resolve relative to this file's directory, not the working directory
+PROJECT_DIR = Path(__file__).resolve().parent
+
 def discover_sqlite_dbs(base_dir="databases"):
-    base = Path(base_dir).resolve()
+    base = PROJECT_DIR / base_dir
     results = []
 
     if not base.exists():

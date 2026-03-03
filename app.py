@@ -111,7 +111,7 @@ def select_db(req: SelectDatabaseRequest):
     
 @app.get("/databases/local/sqlite")
 def list_local_sqlite():
-    dbs = discover_sqlite_dbs(".")
+    dbs = discover_sqlite_dbs("databases")
     return {"sqlite_databases": dbs}
 
 if __name__ == "__main__":
